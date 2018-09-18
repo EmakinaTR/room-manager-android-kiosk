@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Room Manager Kiosk</string>
+    <string name="hiddenBreakoutButton">Hidden Exit Button!</string>
+</resources>
