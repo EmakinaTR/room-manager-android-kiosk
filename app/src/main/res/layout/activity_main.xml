@@ -13,12 +13,4 @@
         android:layout_height="match_parent"
         android:orientation="horizontal" />
 
-    <Button
-        android:id="@+id/hiddenExitButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:text="@string/hiddenBreakoutButton"
-        android:visibility="gone" />
-
 </android.support.constraint.ConstraintLayout>

@@ -25,13 +25,16 @@ public class MainActivity extends Activity {
 
     private final List blockedKeys = new ArrayList(Arrays.asList(KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_VOLUME_UP));
     private Button hiddenExitButton;
+    private Timer blackBarRemoveTimer = new Timer();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         RemoveBlackBar();
+
         setContentView(R.layout.activity_main);
 
         // every time someone enters the kiosk mode, set the flag true
@@ -39,21 +42,10 @@ public class MainActivity extends Activity {
         preventStatusBarExpansion(this);
         OpenSite();
 
-        hiddenExitButton = (Button) findViewById(R.id.hiddenExitButton);
-        hiddenExitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Break out!
-                PrefUtils.setKioskModeActive(false, getApplicationContext());
-                Toast.makeText(getApplicationContext(),"You can leave the app now!", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-
-        new Timer().scheduleAtFixedRate(new TimerTask() {
+        //timer that constantly disables top and navigation bar
+        blackBarRemoveTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-
 
                 runOnUiThread(new Runnable() {
 
@@ -68,13 +60,12 @@ public class MainActivity extends Activity {
             }
         }, 0, 10);
 
-
     }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-        if(!hasFocus) {
+        if (!hasFocus) {
             // Close every kind of system dialog
             Intent closeDialog = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
             sendBroadcast(closeDialog);
@@ -96,7 +87,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    public void RemoveBlackBar(){
+    public void RemoveBlackBar() {
 
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(
@@ -109,7 +100,7 @@ public class MainActivity extends Activity {
 
     }
 
-    public  void OpenSite(){
+    public void OpenSite() {
 
         String url = "http://rooms.ahtapot.io/";
         WebView webView = (WebView) findViewById(R.id.myWebView);
