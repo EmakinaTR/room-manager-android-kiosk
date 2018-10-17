@@ -71,7 +71,14 @@ public class MainActivity extends Activity {
                 });
 
             }
-        }, 0, 10);
+        }, 0, 100);
+
+        retryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onResume();
+            }
+        });
 
         retryButton.setOnClickListener(new View.OnClickListener() {
             @Override
