@@ -5,18 +5,22 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.PixelFormat;
+import android.net.ConnectivityManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
-import android.widget.Toast;
 
+import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -24,8 +28,13 @@ import java.util.TimerTask;
 public class MainActivity extends Activity {
 
     private final List blockedKeys = new ArrayList(Arrays.asList(KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_VOLUME_UP));
-    private Button hiddenExitButton;
     private Timer blackBarRemoveTimer = new Timer();
+    private Timer internetChecker = new Timer();
+
+    private Button retryButton;
+    private WebView webView;
+    private View noInternetConnectionView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +45,10 @@ public class MainActivity extends Activity {
         RemoveBlackBar();
 
         setContentView(R.layout.activity_main);
+
+        webView = (WebView) findViewById(R.id.myWebView);
+        noInternetConnectionView = (View) findViewById(R.id.noInternetView);
+        retryButton = (Button) findViewById(R.id.retryButton);
 
         // every time someone enters the kiosk mode, set the flag true
         PrefUtils.setKioskModeActive(true, getApplicationContext());
@@ -60,6 +73,13 @@ public class MainActivity extends Activity {
             }
         }, 0, 10);
 
+        retryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onResume();
+            }
+        });
+
     }
 
     @Override
@@ -70,6 +90,37 @@ public class MainActivity extends Activity {
             Intent closeDialog = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
             sendBroadcast(closeDialog);
         }
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+
+        Log.d("RELOADED", "RELOADED.");
+
+        internetChecker.cancel();
+
+        if (!checkInternetConnection(this)) {
+
+            noInternetConnectionView.setVisibility(View.VISIBLE);
+            webView.setVisibility(View.INVISIBLE);
+
+            internetChecker.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    onResume();
+                }
+            },0, 1000);
+
+        }else{
+
+            noInternetConnectionView.setVisibility(View.INVISIBLE);
+            webView.setVisibility(View.VISIBLE);
+
+            webView.reload();
+
+        }
+
     }
 
     @Override
@@ -102,11 +153,13 @@ public class MainActivity extends Activity {
 
     public void OpenSite() {
 
-        String url = "http://rooms.ahtapot.io/";
-        WebView webView = (WebView) findViewById(R.id.myWebView);
+        Log.d("MAC ADDRESS", "OpenSite: " + getMacAddr());
+
+        String url = "http://rooms.ahtapot.io?mac=" + getMacAddr();
 
         webView.setInitialScale(50);
 
+        webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setLoadWithOverviewMode(true);
         webView.getSettings().setUseWideViewPort(true);
@@ -139,6 +192,42 @@ public class MainActivity extends Activity {
 
         CustomViewGroup view = new CustomViewGroup(context);
         manager.addView(view, localLayoutParams);
+    }
+
+    public static String getMacAddr() {
+        try {
+            List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface nif : all) {
+                if (!nif.getName().equalsIgnoreCase("wlan0")) continue;
+
+                byte[] macBytes = nif.getHardwareAddress();
+                if (macBytes == null) {
+                    return "";
+                }
+
+                StringBuilder res1 = new StringBuilder();
+                for (byte b : macBytes) {
+                    res1.append(String.format("%02X-",b));
+                }
+
+                if (res1.length() > 0) {
+                    res1.deleteCharAt(res1.length() - 1);
+                }
+                return res1.toString();
+            }
+        } catch (Exception ex) {
+        }
+        return "02-00-00-00-00-00";
+    }
+
+    public static boolean checkInternetConnection(Context context) {
+
+        ConnectivityManager con_manager = (ConnectivityManager)
+                context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        return (con_manager.getActiveNetworkInfo() != null
+                && con_manager.getActiveNetworkInfo().isAvailable()
+                && con_manager.getActiveNetworkInfo().isConnected());
     }
 
 }
