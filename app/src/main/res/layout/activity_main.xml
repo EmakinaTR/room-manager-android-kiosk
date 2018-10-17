@@ -7,10 +7,49 @@
     android:orientation="horizontal"
     tools:context=".MainActivity">
 
+    <RelativeLayout
+        android:id="@+id/noInternetView"
+        android:layout_width="592dp"
+        android:layout_height="328dp"
+        android:orientation="horizontal"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center"
+            android:autoText="false"
+            android:gravity="center"
+            android:text="No Internet Connection"
+            android:textSize="55dp" />
+
+        <Button
+            android:id="@+id/retryButton"
+            android:layout_width="160dp"
+            android:layout_height="60dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="30dp"
+            android:layout_weight="1"
+            android:text="Retry"
+            android:textSize="28dp" />
+
+    </RelativeLayout>
+
     <WebView
         android:id="@+id/myWebView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal" />
+        android:orientation="horizontal"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="28dp">
+
+    </WebView>
 
 </android.support.constraint.ConstraintLayout>
