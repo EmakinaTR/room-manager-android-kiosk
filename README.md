@@ -38,3 +38,4 @@
 
   You can completely turn off notifications for a specific app by tapping Settings > Notifications. Tap an app, then enable the Block all setting. You can also choose to show an app's alerts silently—but remember, even silent notifications can be tempting.
  
+10. Disable Location Settings.
