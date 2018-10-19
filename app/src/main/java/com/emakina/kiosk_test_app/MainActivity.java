@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.PixelFormat;
 import android.net.ConnectivityManager;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +18,7 @@ import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
+import android.widget.Toast;
 
 import java.net.NetworkInterface;
 import java.util.ArrayList;
@@ -29,9 +32,7 @@ public class MainActivity extends Activity {
 
     private final List blockedKeys = new ArrayList(Arrays.asList(KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_VOLUME_UP));
     private Timer blackBarRemoveTimer = new Timer();
-    private Timer internetChecker = new Timer();
 
-    private Button retryButton;
     private WebView webView;
     private View noInternetConnectionView;
 
@@ -41,14 +42,14 @@ public class MainActivity extends Activity {
 
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
         RemoveBlackBar();
 
         setContentView(R.layout.activity_main);
 
         webView = (WebView) findViewById(R.id.myWebView);
         noInternetConnectionView = (View) findViewById(R.id.noInternetView);
-        retryButton = (Button) findViewById(R.id.retryButton);
 
         // every time someone enters the kiosk mode, set the flag true
         PrefUtils.setKioskModeActive(true, getApplicationContext());
@@ -73,20 +74,6 @@ public class MainActivity extends Activity {
             }
         }, 0, 100);
 
-        retryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onResume();
-            }
-        });
-
-        retryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onResume();
-            }
-        });
-
     }
 
     @Override
@@ -100,32 +87,46 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
 
         Log.d("RELOADED", "RELOADED.");
 
-        internetChecker.cancel();
-
         if (!checkInternetConnection(this)) {
+
+            Log.d("HERE", "NO INTERNET.");
 
             noInternetConnectionView.setVisibility(View.VISIBLE);
             webView.setVisibility(View.INVISIBLE);
 
-            internetChecker.scheduleAtFixedRate(new TimerTask() {
+            new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    onResume();
-                }
-            },0, 1000);
 
-        }else{
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity.this, "Trying to Reconnect.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    if (checkInternetConnection(MainActivity.this)) {
+                        this.cancel();
+                    }
+
+                }
+            }, 0, 3000);
+
+            if (checkInternetConnection(MainActivity.this)) {
+                MainActivity.this.onResume();
+            }
+
+        } else {
 
             noInternetConnectionView.setVisibility(View.INVISIBLE);
             webView.setVisibility(View.VISIBLE);
-
+            webView.clearCache(true);
             webView.reload();
-
         }
 
     }
@@ -163,8 +164,6 @@ public class MainActivity extends Activity {
         Log.d("MAC ADDRESS", "OpenSite: " + getMacAddr());
 
         String url = "http://rooms.ahtapot.io?mac=" + getMacAddr();
-
-        webView.setInitialScale(50);
 
         webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
         webView.getSettings().setJavaScriptEnabled(true);
@@ -214,7 +213,7 @@ public class MainActivity extends Activity {
 
                 StringBuilder res1 = new StringBuilder();
                 for (byte b : macBytes) {
-                    res1.append(String.format("%02X-",b));
+                    res1.append(String.format("%02X-", b));
                 }
 
                 if (res1.length() > 0) {
