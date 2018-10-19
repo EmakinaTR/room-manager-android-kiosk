@@ -27,4 +27,14 @@
  7. Enable Kiosk Specific Settings
  
   On the main settings, go to "Applications". Find the "Room Manager Kiosk". In the settings of application, enable "Home Screen Application" and "Draw over other apps".
+  
+ 8. Change Font Size 
+ 
+  On the main settings, Tap Accessibility, then tap Font size. Make it the smallest one.
+  
+9. Disable All Notifications
+
+  To keep your phone’s lock screen from lighting up when notifications come in, tap Settings > Display, then toggle off the Ambient Display setting. Or, here's another option: Tap Settings > Sound > Do not disturb > Block visual disturbances, then enable the Block when screen is off setting. Doing so will keep alerts blocked by Do Not Disturb from lighting up your phone's lock screen.
+
+  You can completely turn off notifications for a specific app by tapping Settings > Notifications. Tap an app, then enable the Block all setting. You can also choose to show an app's alerts silently—but remember, even silent notifications can be tempting.
  
