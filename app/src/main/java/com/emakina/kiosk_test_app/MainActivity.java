@@ -10,13 +10,16 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.webkit.HttpAuthHandler;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -24,7 +27,9 @@ import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -36,6 +41,9 @@ public class MainActivity extends Activity {
     private WebView webView;
     private View noInternetConnectionView;
 
+    private String autUserName = "";
+    private String authPassword = "";
+    private String baseUrl = "http://room-manager.demo.emakina.com.tr?mac=";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,7 +171,7 @@ public class MainActivity extends Activity {
 
         Log.d("MAC ADDRESS", "OpenSite: " + getMacAddr());
 
-        String url = "http://rooms.ahtapot.io?mac=" + getMacAddr();
+        String url = baseUrl + getMacAddr();
 
         webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
         webView.getSettings().setJavaScriptEnabled(true);
@@ -171,6 +179,16 @@ public class MainActivity extends Activity {
         webView.getSettings().setUseWideViewPort(true);
 
         webView.loadUrl(url);
+
+        webView.setWebViewClient(new WebViewClient(){
+
+            @Override
+            public void onReceivedHttpAuthRequest(WebView view,
+                                                  HttpAuthHandler handler, String host, String realm) {
+                handler.proceed( autUserName, authPassword);
+            }
+
+        });
 
     }
 
